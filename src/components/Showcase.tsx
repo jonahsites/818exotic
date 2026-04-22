@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import * as THREE from 'three/webgpu';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+import { ThreeMFLoader } from 'three/addons/loaders/3MFLoader.js';
 // @ts-ignore
 import Stats from 'stats-gl';
 import * as dat from 'dat.gui';
@@ -11,63 +13,97 @@ import modelConfig from '../models-config.json';
 
 const modelData = [
   {
-    "model": "2025_lamborghini_urus_se.glb",
+    "name": "2021 Lamborghini Urus",
+    "url": "https://dl.dropboxusercontent.com/scl/fi/74774nxsasm7ce8exwv2r/2025_lamborghini_urus_se.glb?rlkey=sr9urz2j60zg5iz315tyymuf0&st=v0p7kgz5",
     "yOffset": -0.1,
     "scaleMult": 0.74,
     "rotationOffset": 0
   },
   {
-    "model": "2024_lamborghini_revuelto.glb",
+    "name": "BMW M4 Competition",
+    "url": "https://dl.dropboxusercontent.com/scl/fi/4mhrd6lz3b45ea32atqzc/bmw_m4_competition_2021.glb?rlkey=9nzetwqkp7vbiq3ljruv7r35v&st=8fukm13q",
     "yOffset": -0.05,
-    "scaleMult": 0.49,
+    "scaleMult": 0.635,
     "rotationOffset": 0
   },
   {
-    "model": "rolls-royce_2020_mansory_wraith.glb",
+    "name": "Mercedes-AMG GLC 43",
+    "url": "https://dl.dropboxusercontent.com/scl/fi/ozz22dc87bc151a0hjprz/Mercedes.glb?rlkey=5j3joc05oz974f0ktkcn2y87o&st=9uml5j9z",
     "yOffset": -0.05,
-    "scaleMult": 0.648,
-    "rotationOffset": 0
+    "scaleMult": 1.109,
+    "rotationOffset": 1.525
   },
   {
-    "model": "2023_chevrolet_corvette_z06.glb",
-    "yOffset": -0.021,
+    "name": "Corvette C8 Stingray",
+    "url": "https://dl.dropboxusercontent.com/scl/fi/bk7isytkbgv4fvadtbhp7/2020_chevrolet_corvette_c8_stingray.glb?rlkey=p5edebke7ziyoaz4cujv69crf&st=pokntlp1",
+    "yOffset": -0.035,
     "scaleMult": 0.529,
     "rotationOffset": 0
+  },
+  {
+    "name": "2019 Mclaren 600 LT Coupe",
+    "url": "https://dl.dropboxusercontent.com/scl/fi/32q7brp20cb4lhu6tl7yy/mclaren.glb?rlkey=xvljtu16pgpq17175ia4lzcu9&st=7dznf6zq",
+    "yOffset": 0.006,
+    "scaleMult": 1.069,
+    "rotationOffset": -4.665
+  },
+  {
+    "name": "Rolls Royce Cullinan",
+    "url": "https://dl.dropboxusercontent.com/scl/fi/fjmuybrmtrg7p6hh4lp7v/result-1.glb?rlkey=6nnq8rqxbw2dka6r0j33v42xi&st=7mksum6q",
+    "yOffset": -0.049,
+    "scaleMult": 1.096,
+    "rotationOffset": -4.665
   }
 ];
 
 const sections = [
   {
-    label: "01 — Hybrid Super SUV",
-    title: "Lamborghini\nUrus SE",
-    desc: "The first PHEV Super SUV. 800 CV of combined power, leading the charge into a new era of performance and sustainability.",
-    tags: ["Hybrid", "800 CV", "6-Pot Brakes"],
+    label: "01 — Super SUV Evolution",
+    title: "Lamborghini\nUrus",
+    desc: "The ultimate Super SUV. Combining the soul of a super sports car with the practical functionality of an SUV.",
+    tags: ["V8 Bi-Turbo", "641 HP", "Performance"],
     color: "#4A7C7A",
     accent: "#F4A261"
   },
   {
-    label: "02 — V12 Hybrid Vision",
-    title: "Lamborghini\nRevuelto",
-    desc: "The successor to the Aventador. A plug-in hybrid masterpiece with a naturally aspirated V12 at its heart.",
-    tags: ["V12 PHEV", "1015 CV", "Arancio Apodis"],
+    label: "02 — M Performance",
+    title: "BMW M4\nCompetition",
+    desc: "The new benchmark for agility and dynamics. A green beast that dominates every corner with surgical precision.",
+    tags: ["Inline-6", "503 HP", "Isle of Man Green"],
     color: "#E76F51",
     accent: "#E9C46A"
   },
   {
-    label: "03 — Bespoke Luxury",
-    title: "Mansory\nWraith",
-    desc: "Pure opulence reimagined by Mansory. A whisper of luxury combined with an aggressive stance that commands respect on the road.",
-    tags: ["V12 Biturbo", "Bespoke", "Forged Carbon"],
+    label: "03 — Urban Luxury",
+    title: "Mercedes-AMG\nGLC 43",
+    desc: "Experience the perfect blend of daily versatility and AMG DNA. A high-performance SUV for the modern trendsetter.",
+    tags: ["V6 Biturbo", "385 HP", "AMG Dynamics"],
     color: "#2C3E50",
     accent: "#4A7C7A"
   },
   {
-    label: "04 — American Apex",
-    title: "Corvette\nZ06",
-    desc: "The track-focused beast with a flat-plane crank V8. Experience the soul of high-performance engineering on the open road.",
-    tags: ["Flat-Plane V8", "670 HP", "Rapid Blue"],
+    label: "04 — Redline Soul",
+    title: "Corvette C8\nStingray",
+    desc: "The mid-engine revolution. An American icon reborn with exotic performance and a heart-pounding V8 soundtrack.",
+    tags: ["V8 LT2", "495 HP", "Torch Red"],
     color: "#F4A261",
     accent: "#E76F51"
+  },
+  {
+    label: "05 — Track Legend",
+    title: "Mclaren\n600 LT",
+    desc: "The lighter, faster, more focused Longtail. Designed to dominate the track while maintaining road legality.",
+    tags: ["V8 Twin-Turbo", "592 HP", "Longtail"],
+    color: "#4A7C7A",
+    accent: "#F4A261"
+  },
+  {
+    label: "06 — Absolute Pinnacle",
+    title: "Rolls Royce\nCullinan",
+    desc: "The peak of luxury SUVs. Effortless everywhere, providing the most refined and silent ride in the world.",
+    tags: ["V12", "Bespoke", "Luxury Peak"],
+    color: "#2C3E50",
+    accent: "#E9C46A"
   }
 ];
 
@@ -125,7 +161,9 @@ const Showcase: React.FC = () => {
       stats.dom.style.display = 'none'; 
       document.body.appendChild(stats.dom);
 
-      const loader = new GLTFLoader();
+      const gltfLoader = new GLTFLoader();
+      const objLoader = new OBJLoader();
+      const threeMFLoader = new ThreeMFLoader();
       const pmremGenerator = new THREE.PMREMGenerator(renderer);
       scene.environment = pmremGenerator.fromScene(new RoomEnvironment()).texture;
 
@@ -147,42 +185,57 @@ const Showcase: React.FC = () => {
         const data = modelData[i];
         
         // Resolve URL
-        // @ts-ignore
-        const configUrl = modelConfig.models[data.model];
-        const isPlaceholderUrl = !configUrl || configUrl.includes('your-cdn-or-host');
-        const modelUrl = !isPlaceholderUrl ? configUrl : `/models/${data.model}`;
+        let modelUrl = data.url;
+        if (!modelUrl) {
+           // Skip or use dummy if no URL provided yet
+           const dummy = new THREE.Group();
+           dummy.userData = { baseRotation: 0, rotOffset: 0 };
+           scene.add(dummy);
+           carGroupsRefLocal.push(dummy);
+           continue;
+        }
         
         try {
-          const gltf = await loader.loadAsync(modelUrl);
-          const group = gltf.scene;
+          let object: THREE.Object3D;
+          if (modelUrl.toLowerCase().includes('.obj')) {
+            object = await objLoader.loadAsync(modelUrl);
+          } else if (modelUrl.toLowerCase().includes('.3mf')) {
+            object = await threeMFLoader.loadAsync(modelUrl);
+          } else {
+            const gltf = await gltfLoader.loadAsync(modelUrl);
+            object = gltf.scene;
+          }
+          
+          const group = object as THREE.Group;
           
           // Auto-Fit Logic
           // We compute a fresh bounding box based only on visible mesh geometry 
           // to avoid "poisoned" boxes from lights or helpers in the GLB.
           const computeVisibleBox = (obj: THREE.Object3D) => {
+            obj.updateMatrixWorld(true);
             const b = new THREE.Box3();
             obj.traverse((child: any) => {
               if (child.isMesh) {
-                child.geometry.computeBoundingBox();
-                const nodeBox = child.geometry.boundingBox.clone();
-                nodeBox.applyMatrix4(child.matrixWorld);
-                b.union(nodeBox);
+                if (child.geometry) {
+                  child.geometry.computeBoundingBox();
+                  const nodeBox = child.geometry.boundingBox.clone();
+                  nodeBox.applyMatrix4(child.matrixWorld);
+                  b.union(nodeBox);
+                }
               }
             });
             return b;
           };
 
           const box = computeVisibleBox(group);
-          const size = box.getSize(new THREE.Vector3());
           const center = box.getCenter(new THREE.Vector3());
+          const size = box.getSize(new THREE.Vector3());
           
-          // Center geometry to local origin
-          group.traverse((child: any) => {
-            if (child.isMesh) {
-              child.position.x -= center.x;
-              child.position.y -= center.y;
-              child.position.z -= center.z;
-            }
+          // Center geometry to local origin more robustly
+          // We apply the offset to the main group's children so they are centered around the group's origin
+          const offset = center.clone().negate();
+          group.children.forEach(child => {
+            child.position.add(offset);
           });
 
           // Initial scale/pos
@@ -210,10 +263,8 @@ const Showcase: React.FC = () => {
           carGroupsRefLocal.push(group);
           group.visible = false;
         } catch (err) {
-          setLoadError("Some 3D models could not be loaded. Please check the console for details.");
-          console.error(`[Showcase] ERROR: Model failed to load via URL: ${modelUrl}. 
-          If you are seeing 'Unexpected token <', it means the file was not found (404) and the server returned index.html. 
-          Please update src/models-config.json with a working CDN link if local files are missing.`, err);
+          setLoadError(`Model for ${data.name} could not be loaded.`);
+          console.error(`[Showcase] ERROR: Model failed to load via URL: ${modelUrl}`, err);
           // Zero-content Group to prevent crashes while maintaining section count
           const dummy = new THREE.Group();
           dummy.userData = { baseRotation: 0, rotOffset: 0 };
@@ -422,8 +473,8 @@ const Showcase: React.FC = () => {
     document.body.appendChild(guiRef.current.domElement);
 
     carGroups.forEach((group, i) => {
-      if (!group.userData?.baseRotation) return; // Skip invalid
-      const folder = guiRef.current!.addFolder(`#${i+1} ${modelData[i].model}`, { closed: i > 0 });
+      if (!group.userData?.baseRotation && group.children.length === 0) return; // Skip invalid/empty
+      const folder = guiRef.current!.addFolder(`#${i+1} ${modelData[i].name}`, { closed: i > 0 });
       folder.add(group.userData, 'yOffset', -1, 1, 0.001).name('Y Shift (v%)');
       folder.add(group.userData, 'scaleMult', 0.1, 2, 0.001).name('Fit Multiplier');
       folder.add(group.userData, 'baseRotation', -Math.PI*2, Math.PI*2, 0.01).name('Base Rot');
@@ -440,7 +491,8 @@ const Showcase: React.FC = () => {
       toggleSpin: () => { pauseAutoSpinRef.current = !pauseAutoSpinRef.current; },
       saveAll: () => {
         const data = carGroups.map((g, i) => ({
-          model: modelData[i].model,
+          name: modelData[i].name,
+          url: modelData[i].url,
           yOffset: Number(g.userData.yOffset.toFixed(3)),
           scaleMult: Number(g.userData.scaleMult.toFixed(3)),
           rotationOffset: Number((g.userData.baseRotation - Math.PI / 4).toFixed(3))
@@ -510,13 +562,13 @@ const Showcase: React.FC = () => {
       </AnimatePresence>
 
       {/* Edit Mode Toggle */}
-      <div className="fixed top-24 right-8 z-100 pointer-events-auto">
+      <div className="fixed top-32 right-8 z-[200] pointer-events-auto">
         <button
           onClick={() => setIsEditMode(!isEditMode)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all ${
+          className={`flex items-center gap-2 px-6 py-3 rounded-full text-[11px] font-bold uppercase tracking-widest transition-all shadow-xl ${
             isEditMode 
-              ? 'bg-accent text-luxury-black shadow-[0_0_20px_rgba(197,164,126,0.3)]' 
-              : 'bg-white/5 border border-white/10 text-white/60 hover:bg-white/10 hover:text-white'
+              ? 'bg-accent text-white shadow-accent/20' 
+              : 'bg-black text-white hover:bg-accent'
           }`}
         >
           {isEditMode ? <Save size={14} /> : <Settings size={14} />}
