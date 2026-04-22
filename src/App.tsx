@@ -72,7 +72,7 @@ export default function App() {
         >
           <div className="flex items-center gap-3">
             <img 
-              src="/Screenshot 2026-04-21 at 8.42.39 PM.png" 
+              src="/logo-818.png" 
               alt="818 Exotic Logo" 
               className="h-10 w-auto object-contain"
               referrerPolicy="no-referrer"
@@ -577,7 +577,7 @@ export default function App() {
           <div className="col-span-1 lg:col-span-1">
             <div className="flex items-center gap-2 mb-8">
               <img 
-                src="/Screenshot 2026-04-21 at 8.42.39 PM.png" 
+                src="/logo-818.png" 
                 alt="818 Exotic Logo" 
                 className="h-10 w-auto object-contain"
                 referrerPolicy="no-referrer"

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import * as THREE from 'three/webgpu';
+import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
@@ -114,11 +114,13 @@ const Showcase: React.FC = () => {
   const pauseAutoSpinRef = useRef(false);
 
   const sceneRef = useRef<THREE.Scene | null>(null);
-  const rendererRef = useRef<THREE.WebGPURenderer | null>(null);
+  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const carGroupsRef = useRef<THREE.Group[]>([]);
   const statsRef = useRef<any>(null);
   const guiRef = useRef<dat.GUI | null>(null);
   const animationIdRef = useRef<number>(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadProgress, setLoadProgress] = useState(0);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -130,9 +132,11 @@ const Showcase: React.FC = () => {
 
     let scene: THREE.Scene;
     let camera: THREE.PerspectiveCamera;
-    let renderer: THREE.WebGPURenderer;
+    let renderer: THREE.WebGLRenderer;
     const carGroupsRefLocal: THREE.Group[] = [];
     const init = async () => {
+      setIsLoading(true);
+      setLoadProgress(0);
       carGroupsRef.current = carGroupsRefLocal;
       scene = new THREE.Scene();
       scene.background = null;
@@ -140,7 +144,7 @@ const Showcase: React.FC = () => {
       camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 1, 2000);
       camera.position.set(0, 0, 7.5);
 
-      renderer = new THREE.WebGPURenderer({ antialias: true, alpha: true, sampleCount: 4 });
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       renderer.toneMapping = THREE.AgXToneMapping;
       renderer.setSize(window.innerWidth, window.innerHeight);
@@ -154,8 +158,6 @@ const Showcase: React.FC = () => {
       canvas.style.pointerEvents = 'none';
       containerRef.current?.appendChild(canvas);
 
-      await renderer.init();
-
       stats = new Stats({ trackGPU: false });
       stats.init(renderer);
       stats.dom.style.display = 'none'; 
@@ -166,6 +168,15 @@ const Showcase: React.FC = () => {
       const threeMFLoader = new ThreeMFLoader();
       const pmremGenerator = new THREE.PMREMGenerator(renderer);
       scene.environment = pmremGenerator.fromScene(new RoomEnvironment()).texture;
+
+      // Track loading progress
+      const totalModels = modelData.length;
+      let loadedModels = 0;
+
+      const updateProgress = () => {
+        loadedModels++;
+        setLoadProgress(Math.round((loadedModels / totalModels) * 100));
+      };
 
       // Lights
       const keyLight = new THREE.SpotLight(0xfff0e0, 8, 30, Math.PI / 4, 0.5, 1);
@@ -192,6 +203,7 @@ const Showcase: React.FC = () => {
            dummy.userData = { baseRotation: 0, rotOffset: 0 };
            scene.add(dummy);
            carGroupsRefLocal.push(dummy);
+           updateProgress();
            continue;
         }
         
@@ -271,7 +283,10 @@ const Showcase: React.FC = () => {
           scene.add(dummy);
           carGroupsRefLocal.push(dummy);
         }
+        updateProgress();
       }
+
+      setIsLoading(false);
 
       if (carGroupsRefLocal.length > 0) carGroupsRefLocal[0].visible = true;
       sceneRef.current = scene;
@@ -528,6 +543,31 @@ const Showcase: React.FC = () => {
 
   return (
     <div className="relative z-10 pointer-events-none" ref={containerRef}>
+      {/* Loading Overlay */}
+      <AnimatePresence>
+        {isLoading && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[300] flex flex-col items-center justify-center bg-white/95 backdrop-blur-md pointer-events-auto"
+          >
+            <div className="w-12 h-12 border-2 border-accent border-t-transparent rounded-full animate-spin mb-6" />
+            <div className="flex flex-col items-center gap-2 text-center px-10">
+              <span className="text-[10px] font-black uppercase tracking-[0.5em] text-black">818 EXOTIC FLEET INITIALIZING</span>
+              <div className="w-64 h-1 bg-black/5 rounded-full overflow-hidden mt-4">
+                <motion.div 
+                  initial={{ width: 0 }}
+                  animate={{ width: `${loadProgress}%` }}
+                  className="h-full bg-accent"
+                />
+              </div>
+              <span className="text-[8px] font-bold text-black/30 uppercase tracking-widest mt-2">{loadProgress}% Synchronized</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      
       {/* Edit Mode Guide Box */}
       {isEditMode && (
         <div 
