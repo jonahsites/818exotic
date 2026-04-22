@@ -1,0 +1,37 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&amp;family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Space Grotesk", sans-serif;
+  --color-luxury-black: #FFFFFF;
+  --color-luxury-grey: #F8F8F8;
+  --color-accent: #4A7C7A;
+  --color-sunset-orange: #F4A261;
+  --color-sunset-pink: #E76F51;
+  --color-sunset-yellow: #E9C46A;
+}
+
+@layer base {
+  body {
+    background-color: white;
+    color: #1A1A1A;
+    font-family: var(--font-sans);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: -0.025em;
+  }
+}
+
+@utility text-outline {
+  color: transparent;
+  -webkit-text-stroke: 1px #4A7C7A;
+}
+
+@utility transition-editorial {
+  transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
